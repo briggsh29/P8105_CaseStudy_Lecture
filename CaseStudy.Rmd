@@ -1,0 +1,89 @@
+---
+title: "Case Study Lecture"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+Loading a huge dataset tips?
+data %>%  slice (specify rows you want)
+data %>% sample_frac (size = 0.1) - get random 10% of dataset
+
+#Looking at nyc_air_bb dataset
+
+```{r}
+library(p8105.datasets)
+data("nyc_airbnb")
+```
+
+
+```{r}
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(stars = review_scores_location / 2)
+
+nyc_airbnb %>% 
+  group_by(neighbourhood_group, room_type) %>% 
+  summarise(mean_price = mean(price))
+```
+
+Coord_flip to flip x and y axis
+
+Mutate(neighbourhood = fct_reorder(neighbourhood, price)) -> turn to factor and reorder by price for plot
+
+Looking at price in neighborhoods in Manhattan
+
+```{r}
+nyc_airbnb %>% 
+  filter(neighbourhood_group == "Manhattan") %>% 
+  count(neighbourhood)
+
+nyc_airbnb %>% 
+  filter(
+    price < 1000,
+    neighbourhood_group == "Manhattan") %>% 
+  mutate(neighbourhood = fct_reorder(neighbourhood, price)) %>% 
+  ggplot(aes(x = neighbourhood, y = price)) +
+  geom_boxplot() +
+  coord_flip()
+```
+
+```{r}
+nyc_airbnb %>% 
+  sample_n(100) %>% 
+  ggplot(aes(x = lat, y = long, color = price)) +
+  geom_point()
+```
+
+Interactive map: leaflet mapping  
+
+```{r}
+ 
+library(leaflet)
+
+nyc_airbnb %>% 
+  sample_n(10) %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(~lat, ~long)
+
+nyc_airbnb %>% 
+  sample_n(10) %>% 
+  leaflet() %>% 
+  addProviderTiles(providers$CartoDB.Positron) %>%  
+  addCircleMarkers(~lat, ~long)
+
+pal <- colorNumeric("viridis", nyc_airbnb %>% pull(stars))
+          
+#Add color element 
+
+nyc_airbnb %>% 
+  sample_n(100) %>% 
+  leaflet() %>% 
+  addProviderTiles(providers$CartoDB.Positron) %>%  
+  addCircleMarkers(~lat, ~long, color = ~ pal(stars))
+
+```
+
